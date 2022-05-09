@@ -1,22 +1,19 @@
-import json
-import urllib2
-import time
 import sys
+import json
+import urllib.request as urllib2
 
 def rscan(addr):
-	"""Check address for duplicated r values."""
-	# TODO: add BCI API check address
+	#Check address for duplicated r values
 
-	print "ADDRESS-R-SCAN: "
+	print("ADDRESS-R-SCAN: ")
 	
 	urladdr = 'https://blockchain.info/address/%s?format=json&offset=%s'
 
 
 	addrdata = json.load(urllib2.urlopen(urladdr % (addr, '0')))
 	ntx = addrdata['n_tx']
-	print "Data for pubkey: " + str(addr) + " has " + str(addrdata['n_tx']).center(6) + "Tx%s" % 's'[ntx==1:]
-	#print "number of txs: " + str(addrdata['n_tx'])
-
+	print("Data for pubkey: " + str(addr) + " has " + str(addrdata['n_tx']).center(6) + "Tx%s" % 's'[ntx==1:])
+	print("number of txs: " + str(addrdata['n_tx']))
 
 	txs = []
 	for i in range(0, ntx//50 + 1):
@@ -47,27 +44,28 @@ def rscan(addr):
 		x = 0
 		while x < lenx-zi:
 			if inputs[xi][10:74] == inputs[x+zi][10:74]:
-				print "Resued R-Value: "
-				print inputs[x+zi][10:74]
+				print("Resued R-Value: ")
+				print(inputs[x+zi][10:74])
 				bad.append((int(x), str(inputs[x+zi][10:74])))
 				alert += 1
 			x += 1
 			zi += 1
 		xi += 1
 
-
 	if alert < 1:
-		print "Good pubKey. No problems."
+		print("Good pubKey. No problems.")
 	else:
-		print "Address %s has %d reused R value%s!" % (addr, len(bad), "s"[len(bad)==1:])
+		with open('output.txt', 'a+') as filep:
+			filep.write("Address %s has %d reused R value%s!" % (addr, len(bad), "s"[len(bad)==1:]) + '\n')
+
+		print("Address %s has %d reused R value%s!" % (addr, len(bad), "s"[len(bad)==1:]))
 		return bad
 		
 if __name__ == '__main__':
 	from sys import argv
-	print """SCAN ADDR"""
+	print("""SCAN ADDR""")
 	if len(argv) == 1:
-		addr = raw_input("type address:  ")
-	elif len(argv) == 2 and isinstance(argv[1], basestring):
+		addr = input("type address:  ")
+	elif len(argv) == 2 and isinstance(argv[1], str):
 		addr = str(argv[1])
 	rscan(addr)
-	
